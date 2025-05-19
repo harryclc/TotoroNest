@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <title>TotoroNest 控制中心</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f7f7f7;
+            padding: 1rem;
+            max-width: 500px;
+            margin: auto;
+        }
+
+        h2 {
+            margin-top: 1.5rem;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 0.3rem;
+        }
+
+        section {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            margin: 0.3rem 0;
+            display: block;
+        }
+
+        select, input {
+            margin: 0.3rem 0;
+            display: inline;
+        }
+
+        button {
+            margin: 0.5rem 0.2rem;
+            padding: 0.4rem 1rem;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 0.2rem 0;
+        }
+
+        .status-value {
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+<h1>TotoroNest 控制中心</h1>
+
+<section id="status-panel">
+    <h2>📈 当前状态</h2>
+    <ul>
+        <li>窝内温度1: <span class="status-value" id="temp1">--</span> ℃</li>
+        <li>窝内温度2: <span class="status-value" id="temp2">--</span> ℃</li>
+        <li>温控系统温度: <span class="status-value" id="temp3">--</span> ℃</li>
+        <li>环境温度: <span class="status-value" id="ambient_temp">--</span> ℃</li>
+        <li>环境湿度: <span class="status-value" id="ambient_humidity">--</span> %</li>
+        <li>TEC状态: <span class="status-value" id="cooling">--</span></li>
+        <li>风扇PWM: <span class="status-value" id="pwm">--</span></li>
+    </ul>
+</section>
+
+<section id="tec-control">
+    <h2>🔌 手动控制 TEC</h2>
+    <button onclick="toggleTEC(true)">开启 TEC</button>
+    <button onclick="toggleTEC(false)">关闭 TEC</button>
+</section>
+
+<section id="ac-control">
+    <h2>❄️ 空调控制</h2>
+    <label>目标温度：
+        <input type="number" id="set-temp" min="16" max="30" value="26"/> ℃
+    </label>
+    <label>模式：
+        <select id="ac-mode">
+            <option value="cool">制冷</option>
+            <option value="heat">制热</option>
+            <option value="fan">送风</option>
+            <option value="dry">除湿</option>
+            <option value="auto">自动</option>
+            <option value="off">关闭</option>
+        </select>
+    </label>
+    <label>风速：
+        <select id="fan-speed">
+            <option value="auto">自动</option>
+            <option value="low">低</option>
+            <option value="medium">中</option>
+            <option value="high">高</option>
+        </select>
+    </label>
+    <button onclick="sendACCommand()">发送控制</button>
+</section>
+
+<script>
+    function refreshStatus() {
+        fetch("/api/status")
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("temp1").textContent = data.temp1?.toFixed(2) ?? "--";
+                document.getElementById("temp2").textContent = data.temp2?.toFixed(2) ?? "--";
+                document.getElementById("temp3").textContent = data.temp3?.toFixed(2) ?? "--";
+                document.getElementById("ambient_temp").textContent = data.ambient_temp?.toFixed(2) ?? "--";
+                document.getElementById("ambient_humidity").textContent = data.ambient_humidity ?? "--";
+                document.getElementById("cooling").textContent = data.cooling ? "开启" : "关闭";
+                document.getElementById("pwm").textContent = data.pwm ?? "--";
+            }).catch(() => {
+            document.getElementById("cooling").textContent = "连接失败";
+        });
+    }
+
+    function toggleTEC(state) {
+        fetch("/api/tec_control", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({status: state})
+        }).then(res => {
+            if (res.ok) alert(state ? "TEC已开启" : "TEC已关闭");
+            else alert("操作失败");
+        });
+    }
+
+    function sendACCommand() {
+        const payload = {
+            temperature: parseInt(document.getElementById("set-temp").value),
+            mode: document.getElementById("ac-mode").value,
+            fan: document.getElementById("fan-speed").value
+        };
+        fetch("/api/ir_control", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload)
+        }).then(res => {
+            if (res.ok) alert("空调命令已发送");
+            else alert("发送失败");
+        });
+    }
+
+    setInterval(refreshStatus, 5000);
+    window.onload = refreshStatus;
+</script>
+</body>
+</html>
