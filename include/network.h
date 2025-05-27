@@ -14,8 +14,8 @@ void ensureMQTT();
 
 bool isMQTTConnected();
 
-void publishAmbient(float temperature, int humidity);
+bool publishAmbient(float temperature, int humidity);
 
-void publishTemp(int location, float temperature);
+bool publishTemp(int location, float temperature);
 
-void publishStatus(bool cooling, int pwm);
+bool publishStatus(bool cooling, int pwm);

@@ -98,38 +98,38 @@ bool isMQTTConnected() {
 }
 
 // 推送数据
-void publish(const JsonDocument &doc) {
+bool publish(const JsonDocument &doc, const char *topic = MQTT_TOPIC) {
     String payload;
     serializeJson(doc, payload);
-    mqttClient.publish(MQTT_TOPIC, payload.c_str());
-    // Serial.printf("发布至MQTT: %s\n", payload);
+    return mqttClient.publish(topic, payload.c_str());
 }
 
 // 推送环境温湿度数据
-void publishAmbient(const float temperature, const int humidity) {
+bool publishAmbient(const float temperature, const int humidity) {
     JsonDocument doc;
     doc["type"] = "ambient";
     doc["temperature"] = temperature;
     doc["humidity"] = humidity;
-    publish(doc);
+    return publish(doc);
 }
 
 // 推送传感器温度数据
-void publishTemp(const int location, const float temperature) {
+bool publishTemp(const int location, const float temperature) {
     if (isTempValid(temperature)) {
         JsonDocument doc;
         doc["type"] = "temp";
         doc["location"] = location;
         doc["temperature"] = temperature;
-        publish(doc);
+        return publish(doc);
     }
+    return false;
 }
 
 // 推送TEC状态
-void publishStatus(const bool cooling, const int pwm) {
+bool publishStatus(const bool cooling, const int pwm) {
     JsonDocument doc;
     doc["type"] = "tec";
     doc["cooling"] = cooling;
     doc["pwm"] = pwm;
-    publish(doc);
+    return publish(doc);
 }
