@@ -28,7 +28,7 @@ void disableCooling() {
 
 void updateCooling() {
     if (isTempValid(temp1) && isTempValid(temp2)) {
-        if (temp1 > 28.0 || temp2 > 28.0) {
+        if (temp1 >= 27.5 || temp2 >= 27.5) {
             enableCooling();
         } else if (temp1 < 24.0 || temp2 < 25.0) {
             disableCooling();
@@ -42,9 +42,9 @@ void updateCooling() {
         }
         ledcWrite(LEDC_CHANNEL_0, pwmValue);
     } else if (isTempValid(ambient_temp)) {
-        if (ambient_temp > 28.0) {
+        if (ambient_temp >= 27.5) {
             enableCooling();
-        } else if (ambient_temp < 26.0) {
+        } else if (ambient_temp < 25.5) {
             disableCooling();
         }
         if (ambient_temp > 30.0) {
@@ -56,14 +56,14 @@ void updateCooling() {
         }
         ledcWrite(LEDC_CHANNEL_0, pwmValue);
     } else if (isTempValid(temp3)) {
-        if (temp3 > 33.5) {
+        if (temp3 > 33.0) {
             enableCooling();
-        } else if (temp3 < 31.5) {
+        } else if (temp3 < 31.0) {
             disableCooling();
         }
-        if (temp3 > 35.5) {
+        if (temp3 > 35.0) {
             pwmValue = 255;
-        } else if (temp3 > 30.5) {
+        } else if (temp3 > 30.0) {
             pwmValue = 128;
         } else {
             pwmValue = 64;
