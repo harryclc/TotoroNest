@@ -32,7 +32,7 @@ void ensureWiFi() {
 }
 
 bool isWiFiConnected() {
-    return mqttClient.connected();
+    return WiFiClass::status() == WL_CONNECTED;
 }
 
 // 扫描周围Wi-Fi网络
